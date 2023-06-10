@@ -1,0 +1,81 @@
+# OS generated files
+[Tt]humbs.db
+.DS_Store
+
+# Visual Studio generated files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.cache
+*.sln.ide/
+
+# Compiled files
+bin/
+obj/
+
+# Packages directory. Nuget packages can be restored.
+**/packages/*
+
+# Restore the DefaultIgnoreCondition for the packages directory.
+!**/packages/build/
+!**/packages/tools/
+
+# ReSharper generated files
+_ReSharper*/
+
+# Node.js generated files
+node_modules/
+
+# Visual Studio Code generated files
+.vs/
+.vscode/
+*.code-workspace
+
+# Log files
+*.log
+
+# User-specific files (Rider)
+.idea/
+
+# Temp files
+*.tmp
+*.swp
+*~
+
+# Dotnet script generated files
+*.csx
+
+# NuGet Symbol Packages
+*.snupkg
+
+# Azure Functions localsettings file
+local.settings.json
+
+# Project secrets
+*.pfx
+*.key
+*.cer
+*.crt
+*.pem
+
+# Web Publish settings
+*.pubxml
+
+# Local development config settings
+appsettings.*.json
+
+# Azure DevOps Pipelines
+azure-pipelines.yml
+
+# Terraform
+.terraform/
+
+# Ignore SQL Server files
+*.mdf
+*.ldf
+*.ndf
+
+# Ignore sensitive data connections
+ConnectionStrings.config
+Web.*.config
