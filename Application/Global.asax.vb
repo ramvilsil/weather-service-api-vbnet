@@ -1,11 +1,12 @@
 ﻿Imports System.Web.Http
+Imports System.Web
 Imports Unity
 Imports Unity.Lifetime
 Imports Unity.AspNet.WebApi
 Imports Application.Services
 
 Public Class WebApiApplication
-    Inherits System.Web.HttpApplication
+    Inherits HttpApplication
 
     Sub Application_Start()
 
@@ -14,6 +15,5 @@ Public Class WebApiApplication
         GlobalConfiguration.Configuration.DependencyResolver = New UnityDependencyResolver(container)
 
         GlobalConfiguration.Configure(AddressOf WebApiConfig.Register)
-        FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters)
     End Sub
 End Class

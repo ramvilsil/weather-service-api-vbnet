@@ -9,7 +9,7 @@ Imports Microsoft.VisualStudio.TestTools.UnitTesting
 <TestClass()> Public Class ValuesControllerTest
     <TestMethod()> Public Sub GetValues()
         'Arrange
-        Dim controller As New ValuesController()
+        Dim controller As New WeatherController()
 
         'Act
         Dim result As IEnumerable(Of String) = controller.GetValues()
@@ -23,7 +23,7 @@ Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
     <TestMethod()> Public Sub GetValueById()
         'Arrange
-        Dim controller As New ValuesController()
+        Dim controller As New WeatherController()
 
         'Act
         Dim result As String = controller.GetValue(5)
@@ -34,7 +34,7 @@ Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
     <TestMethod()> Public Sub PostValue()
         'Arrange
-        Dim controller As New ValuesController()
+        Dim controller As New WeatherController()
 
         'Act
         controller.PostValue("value")
@@ -44,7 +44,7 @@ Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
     <TestMethod()> Public Sub PutValue()
         'Arrange
-        Dim controller As New ValuesController()
+        Dim controller As New WeatherController()
 
         'Act
         controller.PutValue(5, "value")
@@ -54,7 +54,7 @@ Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
     <TestMethod()> Public Sub DeleteValue()
         'Arrange
-        Dim controller As New ValuesController()
+        Dim controller As New WeatherController()
 
         'Act
         controller.DeleteValue(5)
