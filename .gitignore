@@ -78,4 +78,5 @@ azure-pipelines.yml
 
 # Ignore sensitive data connections
 ConnectionStrings.config
+Web.config
 Web.*.config
