@@ -28,14 +28,16 @@ Namespace Services
             _geolocationApiUrl = geolocationApiUrl
         End Sub
 
-        Public Async Function GetCurrentWeatherByGeolocationAsync(Optional geolocation As Object = Nothing) As Task(Of Object)
+        Public Async Function GetCurrentWeatherByGeolocationAsync(Optional geolocation As Object = Nothing) As Task(Of Result(Of Object))
 
             Dim geolocationQuery As String = geolocation
 
+            Debug.WriteLine(geolocationQuery)
+
             If geolocation Is Nothing Then
                 Dim result = Await GetGeolocationByPublicIpAddressAsync()
-                If TypeOf result Is Geolocation Then
-                    geolocation = CType(result, Geolocation)
+                If TypeOf result.Data Is Geolocation Then
+                    geolocation = CType(result.Data, Geolocation)
                     If geolocation.Latitude IsNot Nothing AndAlso geolocation.Longitude IsNot Nothing Then
                         geolocationQuery = $"{geolocation.Latitude},{geolocation.Longitude}"
                     End If
@@ -48,35 +50,32 @@ Namespace Services
 
             Dim content As String = Await response.Content.ReadAsStringAsync()
 
+            Debug.WriteLine($"Weather API response: {content}")
+
             If Not response.IsSuccessStatusCode Then
-                Dim statusCode = response.StatusCode
                 Dim message = JObject.Parse(content)
-                Return New With {.Error = New With {.StatusCode = statusCode, .Message = message}}
+                Return New Result(Of Object) With {
+                        .Success = False,
+                        .Data = message
+                    }
             End If
 
             Dim data As Object = JsonConvert.DeserializeObject(Of ExpandoObject)(content)
 
-            Debug.WriteLine(data)
-
-            Dim currentWeather As CurrentWeather = Nothing
-
+            Dim currentWeather As CurrentWeather
             Try
-                currentWeather = New CurrentWeather With
-                {
-                    .Geolocation = $"{data.location.name}, {data.location.region}, {data.location.country}",
-                    .TemperatureC = data.current.temp_c,
-                    .TemperatureF = data.current.temp_f,
-                    .Condition = data.current.condition.text,
-                    .Humidity = data.current.humidity,
-                    .WindMph = data.current.wind_mph,
-                    .WindKph = data.current.wind_kph
-                }
+                currentWeather = PopulateCurrentWeatherObj(data)
             Catch ex As Exception
-                Return New With {.Error = "Invalid API Response"}
+                Return New Result(Of Object) With {
+                        .Success = False,
+                        .Data = "CurrentWeather object could not be populated"
+                    }
             End Try
 
-            Return currentWeather
-
+            Return New Result(Of Object) With {
+                        .Success = True,
+                        .Data = currentWeather
+                    }
         End Function
 
         Private Function GetClientPublicIpAddress() As String
@@ -96,45 +95,157 @@ Namespace Services
             End Try
         End Function
 
-        Public Async Function GetGeolocationByPublicIpAddressAsync(Optional publicIpAddress As String = Nothing) As Task(Of Object)
-            If publicIpAddress Is Nothing Then
-                Debug.WriteLine($"No public ip address passed")
-                Try
-                    publicIpAddress = GetClientPublicIpAddress()
-                Catch ex As Exception
-                    Return New With {.Error = "Client Public IP Address could not be fetched"}
-                End Try
-            End If
+        Public Async Function GetGeolocationByPublicIpAddressAsync() As Task(Of Result(Of Object))
+
+            Dim publicIpAddress As String
+            Try
+                publicIpAddress = GetClientPublicIpAddress()
+            Catch ex As Exception
+                Return New Result(Of Object) With {
+                        .Success = False,
+                        .Data = "Unable to access IP Address data"
+                    }
+            End Try
+
+            Debug.WriteLine($"Public Ip Address passed: {publicIpAddress}")
 
             Dim response As HttpResponseMessage = Await _httpClient.GetAsync($"{_geolocationApiUrl}{publicIpAddress}")
             Dim content As String = Await response.Content.ReadAsStringAsync()
 
+            Debug.WriteLine($"Geolocation API response: {content}")
+
             If Not response.IsSuccessStatusCode Then
-                Dim statusCode = response.StatusCode
+
                 Dim message = JObject.Parse(content)
-                Return New With {.Error = New With {.StatusCode = statusCode, .Message = message}}
+
+                Return New Result(Of Object) With {
+                       .Success = False,
+                       .Data = message
+                   }
+            End If
+
+            Dim data = JsonConvert.DeserializeObject(Of ExpandoObject)(content)
+
+            Dim geolocation As Geolocation
+            Try
+                geolocation = PopulateGeolocationObj(data)
+            Catch ex As Exception
+                Return New Result(Of Object) With {
+                .Success = False,
+                .Data = "Geolocation object could not be populated"
+            }
+            End Try
+
+            Return New Result(Of Object) With {
+                .Success = True,
+                .Data = geolocation
+            }
+        End Function
+
+        Public Async Function GetGeolocationByPublicIpAddressAsync(publicIpAddress As String) As Task(Of Result(Of Object))
+
+            Dim response As HttpResponseMessage = Await _httpClient.GetAsync($"{_geolocationApiUrl}{publicIpAddress}")
+            Dim content As String = Await response.Content.ReadAsStringAsync()
+
+            Debug.WriteLine($"Geolocation API response: {content}")
+
+            If Not response.IsSuccessStatusCode Then
+
+                Dim message = JObject.Parse(content)
+
+                Return New Result(Of Object) With {
+                       .Success = False,
+                       .Data = message
+                   }
             End If
 
             Dim data As Object = JsonConvert.DeserializeObject(Of ExpandoObject)(content)
 
-            Debug.WriteLine(data)
-
-            Dim geolocation As Geolocation = Nothing
+            Dim geolocation As Geolocation
             Try
-                geolocation = New Geolocation With {
-                .City = data.city,
-                .Region = data.regionName,
-                .Country = data.country,
-                .Latitude = data.lat,
-                .Longitude = data.lon
-            }
+                geolocation = PopulateGeolocationObj(data)
             Catch ex As Exception
-                Return New With {.Error = "Invalid API Response"}
+                Return New Result(Of Object) With {
+                .Success = False,
+                .Data = "Geolocation object could not be populated"
+            }
             End Try
+
+            Return New Result(Of Object) With {
+                .Success = True,
+                .Data = geolocation
+            }
+        End Function
+
+        Private Function PopulateCurrentWeatherObj(data As Object) As CurrentWeather
+            Dim currentWeather = New CurrentWeather() With {
+                .Geolocation = New Geolocation()
+            }
+
+            If data.location?.name IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.location.name.ToString()) Then
+                currentWeather.Geolocation.City = data.location.name
+            End If
+
+            If data.location?.region IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.location.region.ToString()) Then
+                currentWeather.Geolocation.Region = data.location.region
+            End If
+
+            If data.location?.country IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.location.country.ToString()) Then
+                currentWeather.Geolocation.Country = data.location.country
+            End If
+
+            If data.current?.temp_c IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.current.temp_c.ToString()) Then
+                currentWeather.TemperatureC = data.current.temp_c
+            End If
+
+            If data.current?.temp_f IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.current.temp_f.ToString()) Then
+                currentWeather.TemperatureF = data.current.temp_f
+            End If
+
+            If data.current?.condition?.text IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.current.condition.text.ToString()) Then
+                currentWeather.Condition = data.current.condition.text
+            End If
+
+            If data.current?.humidity IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.current.humidity.ToString()) Then
+                currentWeather.Humidity = data.current.humidity
+            End If
+
+            If data.current?.wind_mph IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.current.wind_mph.ToString()) Then
+                currentWeather.WindMph = data.current.wind_mph
+            End If
+
+            If data.current?.wind_kph IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.current.wind_kph.ToString()) Then
+                currentWeather.WindKph = data.current.wind_kph
+            End If
+
+            Return currentWeather
+        End Function
+
+        Private Function PopulateGeolocationObj(data As Object) As Geolocation
+            Dim geolocation = New Geolocation()
+
+            If data?.City IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.City.ToString()) Then
+                geolocation.City = data.City
+            End If
+
+            If data?.regionName IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.regionName.ToString()) Then
+                geolocation.Region = data.regionName
+            End If
+
+            If data?.country IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.country.ToString()) Then
+                geolocation.Country = data.country
+            End If
+
+            If data?.lat IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.lat.ToString()) Then
+                geolocation.Latitude = data.lat
+            End If
+
+            If data?.lon IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(data.lon.ToString()) Then
+                geolocation.Longitude = data.lon
+            End If
 
             Return geolocation
         End Function
-
 
     End Class
 

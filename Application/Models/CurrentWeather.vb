@@ -2,7 +2,7 @@
 
     Public Class CurrentWeather
 
-        Public Property Geolocation As String
+        Public Property Geolocation As Geolocation
         Public Property TemperatureC As Double
         Public Property TemperatureF As Double
         Public Property Condition As String

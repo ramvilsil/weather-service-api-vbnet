@@ -3,6 +3,7 @@ Imports System.Threading.Tasks
 Imports Microsoft.Ajax.Utilities
 Imports Application.Services
 Imports Application.DTOs
+Imports Application.Models
 
 Namespace Controllers
 
@@ -17,8 +18,13 @@ Namespace Controllers
 
         <HttpGet>
         Public Async Function GetCurrentWeatherByPublicGeolocation() As Task(Of IHttpActionResult)
-            Dim response = Await _weatherService.GetCurrentWeatherByGeolocationAsync()
-            Return Ok(response)
+            Dim response As Result(Of Object) = Await _weatherService.GetCurrentWeatherByGeolocationAsync()
+
+            If Not response.Success Then
+                Return BadRequest(response.Data.ToString)
+            End If
+
+            Return Ok(response.Data)
         End Function
 
         <HttpPost>
@@ -33,9 +39,13 @@ Namespace Controllers
                 Return BadRequest("Empty request parameters")
             End If
 
+            Dim response As Result(Of Object) = Await _weatherService.GetCurrentWeatherByGeolocationAsync(geolocation)
 
-            Dim response = Await _weatherService.GetCurrentWeatherByGeolocationAsync(geolocation)
-            Return Ok(response)
+            If Not response.Success Then
+                Return BadRequest(response.Data.ToString)
+            End If
+
+            Return Ok(response.Data)
         End Function
 
     End Class
