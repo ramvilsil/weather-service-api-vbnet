@@ -185,6 +185,8 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.vb" />
     <Compile Include="Controllers\GeolocationController.vb" />
+    <Compile Include="DTOs\CurrentWeatherRequest.vb" />
+    <Compile Include="DTOs\GeolocationRequest.vb" />
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
