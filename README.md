@@ -29,25 +29,25 @@ Represents the current weather conditions with the following fields:
 ### GeolocationController
 
 - `GET /geolocation`: Returns the geolocation of the request's public IP. Returns a `Geolocation` object.
-- `POST /geolocation`: Returns the geolocation for a provided IP. Include the desired IP as a plain string in the body of the request.
+- `POST /geolocation`: Returns the geolocation for a provided IP. The request body should be a JSON object with the `GeolocationRequest` model.
 
 Example:
 
-    ```bash
-    curl -X POST https://weather-service-vbnet.azurewebsites.net/api/geolocation \
-    -H "Content-Type: text/plain" \
-    -d "192.0.2.0"
-    ```
+```bash
+curl -X POST https://weather-service-vbnet.azurewebsites.net/api/geolocation \
+-H "Content-Type: application/json" \
+-d '{"IpAddress": "192.0.2.0"}'
+```
 
 ### CurrentWeatherController
 
 - `GET /currentweather`: Returns the weather for the request's public geolocation. Returns a `CurrentWeather` object.
-- `POST /currentweather`: Returns the weather for a provided geolocation. Include the desired geolocation as a plain string in the body of the request.
+- `POST /currentweather`: Returns the weather for a provided geolocation. The request body should be a JSON object with the `CurrentWeatherRequest` model.
 
 Example:
 
-    ```bash
-    curl -X POST https://weather-service-vbnet.azurewebsites.net/api/currentweather \
-    -H "Content-Type: text/plain" \
-    -d "Paris, France"
-    ```
+```bash
+curl -X POST https://weather-service-vbnet.azurewebsites.net/api/currentweather \
+-H "Content-Type: application/json" \
+-d '{"Geolocation": "Paris, France"}'
+```
