@@ -1,6 +1,7 @@
 ﻿Imports System.Web.Http
 Imports System.Threading.Tasks
 Imports Application.Services
+Imports Application.Models
 
 Namespace Controllers
 
@@ -15,16 +16,14 @@ Namespace Controllers
 
         <HttpGet>
         Public Async Function GetGeolocationByPublicIpAddress() As Task(Of IHttpActionResult)
-            Return Ok(
-                Await _weatherService.GetGeolocationByPublicIpAddressAsync()
-            )
+            Dim response = Await _weatherService.GetGeolocationByPublicIpAddressAsync()
+            Return Ok(response)
         End Function
 
         <HttpPost>
         Public Async Function GetGeolocationBySpecificIpAddress(<FromBody> ipAddress As String) As Task(Of IHttpActionResult)
-            Return Ok(
-                Await _weatherService.GetGeolocationByPublicIpAddressAsync(ipAddress)
-            )
+            Dim response = Await _weatherService.GetGeolocationByPublicIpAddressAsync(ipAddress)
+            Return Ok(response)
         End Function
 
     End Class

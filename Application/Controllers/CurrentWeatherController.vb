@@ -16,16 +16,14 @@ Namespace Controllers
 
         <HttpGet>
         Public Async Function GetCurrentWeatherByPublicGeolocation() As Task(Of IHttpActionResult)
-            Return Ok(
-                Await _weatherService.GetCurrentWeatherByGeolocationAsync()
-            )
+            Dim response = Await _weatherService.GetCurrentWeatherByGeolocationAsync()
+            Return Ok(response)
         End Function
 
         <HttpPost>
         Public Async Function GetCurrentWeatherBySpecificGeolocation(<FromBody> geolocation As Geolocation) As Task(Of IHttpActionResult)
-            Return Ok(
-                Await _weatherService.GetCurrentWeatherByGeolocationAsync(geolocation)
-            )
+            Dim response = Await _weatherService.GetCurrentWeatherByGeolocationAsync(geolocation)
+            Return Ok(response)
         End Function
 
     End Class

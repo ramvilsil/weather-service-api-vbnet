@@ -1,61 +1,76 @@
+Imports System.Net
 Imports System.Net.Http
 Imports System.Threading.Tasks
 Imports System.Dynamic
-Imports Microsoft.Ajax.Utilities
 Imports Newtonsoft.Json
+Imports Newtonsoft.Json.Linq
 Imports Application.Models
-Imports System.Net
 
 Namespace Services
 
     Public Class WeatherService
 
-        Private ReadOnly _weatherApiKey As String = ConfigurationManager.AppSettings("WeatherApi.Key")
-        Private ReadOnly _weatherApiUrl As String = $"http://api.weatherapi.com/v1/current.json?key={_weatherApiKey}"
-        Private ReadOnly _geolocationApiUrl As String = "http://ip-api.com/json/"
-
-        Private ReadOnly _defaultGeolocation As New Geolocation With {
-            .City = "Seattle",
-            .Region = "Washington",
-            .Country = "United States",
-            .Latitude = Nothing,
-            .Longitude = Nothing
-        }
+        Private ReadOnly _weatherApiKey As String
+        Private ReadOnly _weatherApiUrl As String
+        Private ReadOnly _geolocationApiUrl As String
 
         Private ReadOnly _httpClient As HttpClient
+
         Public Sub New(
-            httpClient As HttpClient
+            httpClient As HttpClient,
+            weatherApiKey As String,
+            weatherApiUrl As String,
+            geolocationApiUrl As String
         )
             _httpClient = httpClient
+            _weatherApiKey = weatherApiKey
+            _weatherApiUrl = weatherApiUrl & _weatherApiKey
+            _geolocationApiUrl = geolocationApiUrl
         End Sub
 
-        Private Function ConvertObjectToStringWithoutNulls(obj As Object) As String
-            Dim settings As New JsonSerializerSettings
-            settings.NullValueHandling = NullValueHandling.Ignore
-
-            Return JsonConvert.SerializeObject(obj, settings)
-        End Function
-
-        Public Async Function GetCurrentWeatherByGeolocationAsync(Optional geolocation As Geolocation = Nothing) As Task(Of CurrentWeather)
-
+        Public Async Function GetCurrentWeatherByGeolocationAsync(Optional geolocation As Object = Nothing) As Task(Of Object)
             If geolocation Is Nothing Then
-                geolocation = Await GetGeolocationByPublicIpAddressAsync()
+                Dim result = Await GetGeolocationByPublicIpAddressAsync()
+                If TypeOf result Is Geolocation Then
+                    geolocation = CType(result, Geolocation)
+                Else
+                    Return result
+                End If
             End If
 
-            Dim geolocationString As String
+            Dim geolocationQuery As String
 
-            If geolocation.Latitude Is Nothing Or geolocation.Longitude Is Nothing Then
-                geolocationString = $"{geolocation.City}, {geolocation.Region}, {geolocation.Country}"
-            Else
-                geolocationString = $"{geolocation.Latitude},{geolocation.Longitude}"
+            Select Case True
+                Case geolocation.Latitude IsNot Nothing AndAlso geolocation.Longitude IsNot Nothing
+                    geolocationQuery = $"{geolocation.Latitude},{geolocation.Longitude}"
+                Case geolocation.City IsNot Nothing
+                    geolocationQuery = $"{geolocation.City}"
+                Case geolocation.Region IsNot Nothing
+                    geolocationQuery = $"{geolocation.Region}"
+                Case geolocation.Country IsNot Nothing
+                    geolocationQuery = $"{geolocation.Country}"
+                Case Else
+                    Return New With {.Error = "No valid geolocation provided"}
+            End Select
+
+            Dim response As HttpResponseMessage = Await _httpClient.GetAsync($"{_weatherApiUrl}&q={geolocationQuery}")
+
+            Dim content As String = Await response.Content.ReadAsStringAsync()
+
+            If Not response.IsSuccessStatusCode Then
+                Dim statusCode = response.StatusCode
+                Dim message = JObject.Parse(content)
+                Return New With {.Error = New With {.StatusCode = statusCode, .Message = message}}
             End If
 
-            Dim response As String = Await _httpClient.GetStringAsync(_weatherApiUrl + $"&q={geolocationString}")
+            Dim data As Object = JsonConvert.DeserializeObject(Of ExpandoObject)(content)
 
-            Dim data As Object = JsonConvert.DeserializeObject(Of ExpandoObject)(response)
+            Debug.WriteLine(data)
+
+            Dim currentWeather As CurrentWeather = Nothing
 
             Try
-                Dim currentWeather As New CurrentWeather With
+                currentWeather = New CurrentWeather With
                 {
                     .Geolocation = $"{data.location.name}, {data.location.region}, {data.location.country}",
                     .TemperatureC = data.current.temp_c,
@@ -65,11 +80,11 @@ Namespace Services
                     .WindMph = data.current.wind_mph,
                     .WindKph = data.current.wind_kph
                 }
-                Return currentWeather
             Catch ex As Exception
-                Debug.WriteLine($"Error: {ex.Message}")
-                Return Nothing
+                Return New With {.Error = "Invalid API Response"}
             End Try
+
+            Return currentWeather
 
         End Function
 
@@ -90,44 +105,45 @@ Namespace Services
             End Try
         End Function
 
-        Public Async Function GetGeolocationByPublicIpAddressAsync(Optional publicIpAddress As String = Nothing) As Task(Of Geolocation)
-
+        Public Async Function GetGeolocationByPublicIpAddressAsync(Optional publicIpAddress As String = Nothing) As Task(Of Object)
             If publicIpAddress Is Nothing Then
                 Debug.WriteLine($"No public ip address passed")
                 Try
                     publicIpAddress = GetClientPublicIpAddress()
                 Catch ex As Exception
-                    Debug.WriteLine($"Error: {ex.Message}")
-                    Return _defaultGeolocation
+                    Return New With {.Error = "Client Public IP Address could not be fetched"}
                 End Try
             End If
 
-            Dim response As String = Await _httpClient.GetStringAsync(_geolocationApiUrl + publicIpAddress)
+            Dim response As HttpResponseMessage = Await _httpClient.GetAsync($"{_geolocationApiUrl}{publicIpAddress}")
+            Dim content As String = Await response.Content.ReadAsStringAsync()
 
-            If response.IsNullOrWhiteSpace Then
-                Debug.WriteLine($"Invalid API response")
-                Return _defaultGeolocation
+            If Not response.IsSuccessStatusCode Then
+                Dim statusCode = response.StatusCode
+                Dim message = JObject.Parse(content)
+                Return New With {.Error = New With {.StatusCode = statusCode, .Message = message}}
             End If
 
-            Dim data As Object = JsonConvert.DeserializeObject(Of ExpandoObject)(response)
+            Dim data As Object = JsonConvert.DeserializeObject(Of ExpandoObject)(content)
 
-            Dim geolocation
+            Debug.WriteLine(data)
+
+            Dim geolocation As Geolocation = Nothing
             Try
                 geolocation = New Geolocation With {
-                        .City = data.city,
-                        .Region = data.regionName,
-                        .Country = data.country,
-                        .Latitude = data.lat,
-                        .Longitude = data.lon
-                    }
+                .City = data.city,
+                .Region = data.regionName,
+                .Country = data.country,
+                .Latitude = data.lat,
+                .Longitude = data.lon
+            }
             Catch ex As Exception
-                Debug.WriteLine($"Error: {ex.Message}")
-                geolocation = _defaultGeolocation
+                Return New With {.Error = "Invalid API Response"}
             End Try
 
             Return geolocation
-
         End Function
+
 
     End Class
 
