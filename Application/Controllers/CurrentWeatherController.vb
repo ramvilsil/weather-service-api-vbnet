@@ -1,7 +1,7 @@
 ﻿Imports System.Web.Http
 Imports System.Threading.Tasks
+Imports Microsoft.Ajax.Utilities
 Imports Application.Services
-Imports Application.Models
 
 Namespace Controllers
 
@@ -21,7 +21,10 @@ Namespace Controllers
         End Function
 
         <HttpPost>
-        Public Async Function GetCurrentWeatherBySpecificGeolocation(<FromBody> geolocation As Geolocation) As Task(Of IHttpActionResult)
+        Public Async Function GetCurrentWeatherBySpecificGeolocation(<FromBody> geolocation As String) As Task(Of IHttpActionResult)
+            If geolocation.IsNullOrWhiteSpace Then
+                Return BadRequest("Empty request parameters")
+            End If
             Dim response = Await _weatherService.GetCurrentWeatherByGeolocationAsync(geolocation)
             Return Ok(response)
         End Function

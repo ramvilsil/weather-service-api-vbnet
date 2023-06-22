@@ -1,7 +1,7 @@
 ﻿Imports System.Web.Http
 Imports System.Threading.Tasks
+Imports Microsoft.Ajax.Utilities
 Imports Application.Services
-Imports Application.Models
 
 Namespace Controllers
 
@@ -22,6 +22,9 @@ Namespace Controllers
 
         <HttpPost>
         Public Async Function GetGeolocationBySpecificIpAddress(<FromBody> ipAddress As String) As Task(Of IHttpActionResult)
+            If ipAddress.IsNullOrWhiteSpace Then
+                Return BadRequest("Empty request parameters")
+            End If
             Dim response = Await _weatherService.GetGeolocationByPublicIpAddressAsync(ipAddress)
             Return Ok(response)
         End Function

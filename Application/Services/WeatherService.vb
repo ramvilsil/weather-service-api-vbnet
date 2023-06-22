@@ -29,29 +29,20 @@ Namespace Services
         End Sub
 
         Public Async Function GetCurrentWeatherByGeolocationAsync(Optional geolocation As Object = Nothing) As Task(Of Object)
+
+            Dim geolocationQuery As String = geolocation
+
             If geolocation Is Nothing Then
                 Dim result = Await GetGeolocationByPublicIpAddressAsync()
                 If TypeOf result Is Geolocation Then
                     geolocation = CType(result, Geolocation)
+                    If geolocation.Latitude IsNot Nothing AndAlso geolocation.Longitude IsNot Nothing Then
+                        geolocationQuery = $"{geolocation.Latitude},{geolocation.Longitude}"
+                    End If
                 Else
                     Return result
                 End If
             End If
-
-            Dim geolocationQuery As String
-
-            Select Case True
-                Case geolocation.Latitude IsNot Nothing AndAlso geolocation.Longitude IsNot Nothing
-                    geolocationQuery = $"{geolocation.Latitude},{geolocation.Longitude}"
-                Case geolocation.City IsNot Nothing
-                    geolocationQuery = $"{geolocation.City}"
-                Case geolocation.Region IsNot Nothing
-                    geolocationQuery = $"{geolocation.Region}"
-                Case geolocation.Country IsNot Nothing
-                    geolocationQuery = $"{geolocation.Country}"
-                Case Else
-                    Return New With {.Error = "No valid geolocation provided"}
-            End Select
 
             Dim response As HttpResponseMessage = Await _httpClient.GetAsync($"{_weatherApiUrl}&q={geolocationQuery}")
 
