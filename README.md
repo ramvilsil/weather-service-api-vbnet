@@ -1,31 +1,53 @@
 # WeatherService API Documentation
 
-Base URL: https://weather-service-vbnet.azurewebsites.net/api/
+Base URL: `https://weather-service-vbnet.azurewebsites.net/api/`
 
 ## Models
 
 ### Geolocation
-- `City` (String)
-- `Region` (String)
-- `Country` (String)
-- `Latitude` (String)
-- `Longitude` (String)
+Represents a geographical location with the following fields:
+
+- `City` (String): The city of the geographical location.
+- `Region` (String): The region (e.g., state or province) of the geographical location.
+- `Country` (String): The country of the geographical location.
+- `Latitude` (String): The north-south position on the Earth's surface.
+- `Longitude` (String): The east-west position on the Earth's surface.
 
 ### CurrentWeather
-- `Geolocation` (String)
-- `TemperatureC` (Double)
-- `TemperatureF` (Double)
-- `Condition` (String)
-- `Humidity` (Integer)
-- `WindMph` (Double)
-- `WindKph` (Double)
+Represents the current weather conditions with the following fields:
+
+- `Geolocation` (String): The geographical location for the weather data.
+- `TemperatureC` (Double): The current temperature in Celsius.
+- `TemperatureF` (Double): The current temperature in Fahrenheit.
+- `Condition` (String): The current weather condition (e.g., clear, cloudy, rainy).
+- `Humidity` (Integer): The current humidity level as a percentage.
+- `WindMph` (Double): The wind speed in miles per hour.
+- `WindKph` (Double): The wind speed in kilometers per hour.
 
 ## Endpoints
 
 ### GeolocationController
-- `GET /geolocation`: Returns geolocation of request's public IP.
-- `POST /geolocation`: Returns geolocation for provided IP. Include IP in body.
+
+- `GET /geolocation`: Returns the geolocation of the request's public IP. Returns a `Geolocation` object.
+- `POST /geolocation`: Returns the geolocation for a provided IP. Include the desired IP as a plain string in the body of the request.
+
+Example:
+
+    ```bash
+    curl -X POST https://weather-service-vbnet.azurewebsites.net/api/geolocation \
+    -H "Content-Type: text/plain" \
+    -d "192.0.2.0"
+    ```
 
 ### CurrentWeatherController
-- `GET /currentweather`: Returns weather for request's public geolocation.
-- `POST /currentweather`: Returns weather for provided geolocation. Include Geolocation in body.
+
+- `GET /currentweather`: Returns the weather for the request's public geolocation. Returns a `CurrentWeather` object.
+- `POST /currentweather`: Returns the weather for a provided geolocation. Include the desired geolocation as a plain string in the body of the request.
+
+Example:
+
+    ```bash
+    curl -X POST https://weather-service-vbnet.azurewebsites.net/api/currentweather \
+    -H "Content-Type: text/plain" \
+    -d "Paris, France"
+    ```
