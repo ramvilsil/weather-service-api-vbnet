@@ -19,7 +19,7 @@ Namespace Controllers
         End Sub
 
         <HttpGet>
-        Public Async Function GetGeolocationByPublicIpAddress() As Task(Of IHttpActionResult)
+        Public Async Function GetGeolocationByPublicIpAddressAsync() As Task(Of IHttpActionResult)
             Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync()
 
             If Not responsePayload.Success Then
@@ -30,17 +30,13 @@ Namespace Controllers
         End Function
 
         <HttpGet>
-        <Route("api/geolocation/byipaddress")>
-        Public Async Function GetGeolocationBySpecificIpAddress(<FromBody> requestPayload As RequestPayloadDTO) As Task(Of IHttpActionResult)
-            If requestPayload Is Nothing Then
-                Return BadRequest("Invalid request")
-            End If
-
-            If requestPayload.IpAddress.IsNullOrWhiteSpace Then
+        <Route("api/geolocation/{ipAddress}")>
+        Public Async Function GetGeolocationBySpecificIpAddressAsync(ipAddress As String) As Task(Of IHttpActionResult)
+            If ipAddress Is Nothing OrElse ipAddress.Trim() = String.Empty Then
                 Return BadRequest("IpAddress required")
             End If
 
-            Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync(requestPayload.IpAddress)
+            Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync(ipAddress)
 
             If Not responsePayload.Success Then
                 Return BadRequest(responsePayload.ErrorMessage)

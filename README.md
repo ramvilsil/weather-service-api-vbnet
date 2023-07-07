@@ -6,20 +6,13 @@ RESTful API developed with VB.NET. Provides information about current weather co
 The API obtains data based on either the public IP address from the request or a specified input.
 
 ## Geolocation
-### 1. Public IP Geolocation
+### 1. Public IP
 - **Endpoint:** `GET /geolocation`
 - **Description:** Returns the geolocation of the request's public IP.
 
-### 2. Custom IP Geolocation
-- **Endpoint:** `GET /geolocation/byipaddress`
+### 2. Custom IP
+- **Endpoint:** `GET /geolocation/{ipAddress}`
 - **Description:** Returns the geolocation for a provided IP.
-
-#### Request Payload
-```json
-{
-    "ipAddress": "185.177.124.194"
-}
-```
 
 ####  Response Payload
 ```json
@@ -33,20 +26,13 @@ The API obtains data based on either the public IP address from the request or a
 ```
 
 ## Current Weather
-### 1. Current Weather by Public IP Geolocation
+### 1. Public IP Geolocation
 - **Endpoint:** `GET /currentweather`
 - **Description:** Returns the current weather details of the request's public IP geolocation.
 
-### 2. Custom IP-based Geolocation
-- **Endpoint:** `GET /geolocation/byipaddress`
-- **Description:** Returns the geolocation for a provided IP.
-
-#### Request Payload
-```json
-{
-    "geolocation": "Poland"
-}
-```
+### 2. Custom Geolocation
+- **Endpoint:** `GET /currentweather/{geolocation}`
+- **Description:** Returns the current weather for a provided geolocation.
 
 #### Response Payload
 ```json

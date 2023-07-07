@@ -19,7 +19,7 @@ Namespace Controllers
         End Sub
 
         <HttpGet>
-        Public Async Function GetCurrentWeatherByPublicGeolocation() As Task(Of IHttpActionResult)
+        Public Async Function GetCurrentWeatherByPublicGeolocationAsync() As Task(Of IHttpActionResult)
             Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetCurrentWeatherByGeolocationAsync()
 
             If Not responsePayload.Success Then
@@ -30,17 +30,13 @@ Namespace Controllers
         End Function
 
         <HttpGet>
-        <Route("api/currentweather/bygeolocation")>
-        Public Async Function GetCurrentWeatherBySpecificGeolocation(<FromBody> requestPayload As RequestPayloadDTO) As Task(Of IHttpActionResult)
-            If requestPayload Is Nothing Then
-                Return BadRequest("Invalid request")
-            End If
-
-            If requestPayload.Geolocation.IsNullOrWhiteSpace Then
+        <Route("api/currentweather/{geolocation}")>
+        Public Async Function GetCurrentWeatherBySpecificGeolocationAsync(geolocation As String) As Task(Of IHttpActionResult)
+            If geolocation Is Nothing OrElse geolocation.Trim() = String.Empty Then
                 Return BadRequest("Geolocation required")
             End If
 
-            Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetCurrentWeatherByGeolocationAsync(requestPayload.Geolocation)
+            Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetCurrentWeatherByGeolocationAsync(geolocation)
 
             If Not responsePayload.Success Then
                 Return BadRequest(responsePayload.ErrorMessage)
