@@ -2,7 +2,7 @@
 Imports System.Threading.Tasks
 Imports Microsoft.Ajax.Utilities
 Imports Application.Services
-Imports Application.DTOs
+Imports Application.DTOs.Geolocation
 Imports Application.Models
 
 Namespace Controllers
@@ -12,40 +12,41 @@ Namespace Controllers
 
         Private ReadOnly _weatherService As WeatherService
 
-        Public Sub New(weatherService As WeatherService)
+        Public Sub New(
+            weatherService As WeatherService
+        )
             _weatherService = weatherService
         End Sub
 
         <HttpGet>
         Public Async Function GetGeolocationByPublicIpAddress() As Task(Of IHttpActionResult)
-            Dim response As Result(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync()
+            Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync()
 
-            If Not response.Success Then
-                Return BadRequest(response.Data.ToString)
+            If Not responsePayload.Success Then
+                Return BadRequest(responsePayload.ErrorMessage)
             End If
 
-            Return Ok(response.Data)
+            Return Ok(responsePayload.Data)
         End Function
 
-        <HttpPost>
-        Public Async Function GetGeolocationBySpecificIpAddress(<FromBody> request As GeolocationRequest) As Task(Of IHttpActionResult)
-            If request Is Nothing OrElse Not ModelState.IsValid Then
-                Return BadRequest("Invalid request parameters")
+        <HttpGet>
+        <Route("api/geolocation/byipaddress")>
+        Public Async Function GetGeolocationBySpecificIpAddress(<FromBody> requestPayload As RequestPayloadDTO) As Task(Of IHttpActionResult)
+            If requestPayload Is Nothing Then
+                Return BadRequest("Invalid request")
             End If
 
-            Dim ipAddress As String = request.IpAddress
-
-            If ipAddress.IsNullOrWhiteSpace Then
-                Return BadRequest("Empty request parameters")
+            If requestPayload.IpAddress.IsNullOrWhiteSpace Then
+                Return BadRequest("IpAddress required")
             End If
 
-            Dim response As Result(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync(ipAddress)
+            Dim responsePayload As MethodResult(Of Object) = Await _weatherService.GetGeolocationByPublicIpAddressAsync(requestPayload.IpAddress)
 
-            If Not response.Success Then
-                Return BadRequest(response.Data.ToString)
+            If Not responsePayload.Success Then
+                Return BadRequest(responsePayload.ErrorMessage)
             End If
 
-            Return Ok(response.Data)
+            Return Ok(responsePayload.Data)
         End Function
 
     End Class

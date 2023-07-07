@@ -1,6 +1,6 @@
-﻿Namespace Models
+﻿Namespace DTOs.Geolocation
 
-    Public Class Geolocation
+    Public Class ResponsePayloadDTO
 
         Public Property City As String
         Public Property Region As String

@@ -80,3 +80,10 @@ azure-pipelines.yml
 ConnectionStrings.config
 Web.config
 Web.*.config
+
+.vs
+bin
+obj
+Properties
+PublishProfiles
+packages

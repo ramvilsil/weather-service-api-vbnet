@@ -1,8 +1,8 @@
-﻿Namespace Models
+﻿Namespace DTOs.CurrentWeather
 
-    Public Class CurrentWeather
+    Public Class ResponsePayloadDTO
 
-        Public Property Geolocation As Geolocation
+        Public Property Geolocation As Geolocation.ResponsePayloadDTO
         Public Property TemperatureC As Double
         Public Property TemperatureF As Double
         Public Property Condition As String

@@ -185,14 +185,14 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.vb" />
     <Compile Include="Controllers\GeolocationController.vb" />
-    <Compile Include="DTOs\CurrentWeatherRequest.vb" />
-    <Compile Include="DTOs\GeolocationRequest.vb" />
+    <Compile Include="DTOs\Geolocation\RequestPayloadDTO.vb" />
+    <Compile Include="DTOs\CurrentWeather\RequestPayloadDTO.vb" />
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\CurrentWeather.vb" />
-    <Compile Include="Models\Geolocation.vb" />
-    <Compile Include="Models\Result.vb" />
+    <Compile Include="DTOs\CurrentWeather\ResponsePayloadDTO.vb" />
+    <Compile Include="DTOs\Geolocation\ResponsePayloadDTO.vb" />
+    <Compile Include="Models\MethodResult.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

@@ -1,87 +1,77 @@
 # WeatherService API Documentation
 
-The WeatherService is a RESTful API developed using VB.NET, it provides information about current weather conditions for a specified geolocation. The API obtains data based on either the public IP address from the request or a specified geolocation string.
-
 Base URL: `https://weather-service-vbnet.azurewebsites.net/api/`
 
-## Models
+RESTful API developed with VB.NET. Provides information about current weather conditions for a specified geolocation. 
+The API obtains data based on either the public IP address from the request or a specified input.
 
-### Geolocation
-Represents a geographical location with the following fields:
+## Geolocation
+### 1. Public IP Geolocation
+- **Endpoint:** `GET /geolocation`
+- **Description:** Returns the geolocation of the request's public IP.
 
-- `City` (String): The city of the geographical location.
-- `Region` (String): The region (e.g., state or province) of the geographical location.
-- `Country` (String): The country of the geographical location.
-- `Latitude` (String): The north-south position on the Earth's surface.
-- `Longitude` (String): The east-west position on the Earth's surface.
+### 2. Custom IP Geolocation
+- **Endpoint:** `GET /geolocation/byipaddress`
+- **Description:** Returns the geolocation for a provided IP.
 
-Example response:
-
+#### Request Payload
 ```json
 {
-    "City": "Paris",
-    "Region": "Ile-de-France",
-    "Country": "France",
-    "Latitude": "48.8566",
-    "Longitude": "2.3522"
+    "ipAddress": "185.177.124.194"
 }
 ```
 
-### CurrentWeather
-Represents the current weather conditions with the following fields:
-
-- `Geolocation` (Geolocation): The geographical location for the weather data.
-- `TemperatureC` (Double): The current temperature in Celsius.
-- `TemperatureF` (Double): The current temperature in Fahrenheit.
-- `Condition` (String): The current weather condition (e.g., clear, cloudy, rainy).
-- `Humidity` (Integer): The current humidity level as a percentage.
-- `WindMph` (Double): The wind speed in miles per hour.
-- `WindKph` (Double): The wind speed in kilometers per hour.
-
-Example response:
-
+####  Response Payload
 ```json
 {
-    "Geolocation": {
-        "City": "Paris",
-        "Region": "Ile-de-France",
-        "Country": "France",
-        "Latitude": null,
-        "Longitude": null
-    },
-    "TemperatureC": 19.0,
-    "TemperatureF": 66.2,
-    "Condition": "Sunny",
-    "Humidity": 45,
-    "WindMph": 5.0,
-    "WindKph": 8.0
+	"City": "Naaldwijk",
+	"Region": "South Holland",
+	"Country": "Netherlands",
+	"Latitude": "51.9981",
+	"Longitude": "4.198"
 }
 ```
 
-## Endpoints
+## Current Weather
+### 1. Current Weather by Public IP Geolocation
+- **Endpoint:** `GET /currentweather`
+- **Description:** Returns the current weather details of the request's public IP geolocation.
 
-### GeolocationController
+### 2. Custom IP-based Geolocation
+- **Endpoint:** `GET /geolocation/byipaddress`
+- **Description:** Returns the geolocation for a provided IP.
 
-- `GET /geolocation`: Returns the geolocation of the request's public IP. Returns a `Geolocation` object.
-- `POST /geolocation`: Returns the geolocation for a provided IP. Include a `GeolocationRequest` object in the body of the request.
+#### Request Payload
+```json
+{
+    "geolocation": "Poland"
+}
+```
 
-Example:
+#### Response Payload
+```json
+{
+	"Geolocation": {
+		"City": "Warsaw",
+		"Region": null,
+		"Country": "Poland",
+		"Latitude": null,
+		"Longitude": null
+	},
+	"TemperatureC": 19.0,
+	"TemperatureF": 66.2,
+	"Condition": "Clear",
+	"Humidity": 46,
+	"WindMph": 4.3,
+	"WindKph": 6.8
+}
+```
 
-    ```
-    curl -X POST https://weather-service-vbnet.azurewebsites.net/api/geolocation \
-    -H "Content-Type: application/json" \
-    -d '{ "IpAddress": "192.0.2.0" }'
-    ```
+## Error Handling
+In case of an error, the API will return a response with the following structure.
 
-### CurrentWeatherController
-
-- `GET /currentweather`: Returns the weather for the request's public geolocation. Returns a `CurrentWeather` object.
-- `POST /currentweather`: Returns the weather for a provided geolocation. Include a `CurrentWeatherRequest` object in the body of the request.
-
-Example:
-
-    ```
-    curl -X POST https://weather-service-vbnet.azurewebsites.net/api/currentweather \
-    -H "Content-Type: application/json" \
-    -d '{ "Geolocation": "Paris, France" }'
-    ```
+```json
+{
+	"Message": "<ERROR_MESSAGE>"
+}
+```
