@@ -1,4 +1,4 @@
-# WeatherService API Documentation
+# Weather Service API Documentation
 
 Base URL: `https://weather-service-vbnet.azurewebsites.net/api/`
 
